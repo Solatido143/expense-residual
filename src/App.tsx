@@ -1,30 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Expense } from "./type"
 
 function App() {
   const [name, setName] = useState<Expense['title']>('');
-  const [amount, setAmount] = useState<Expense['amount']>(0);
-  const [expense, setExpense] = useState<Expense[]>([]);
+  const [amount, setAmount] = useState<string>('');
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+
+  useEffect(() => {
+    const storedExpenses = localStorage.getItem('expenses');
+    if (storedExpenses) {
+      try {
+        const parsed = JSON.parse(storedExpenses);
+        if (Array.isArray(parsed)) setExpenses(parsed);
+      } catch {
+        console.error("Invalid expenses data");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('expenses', JSON.stringify(expenses));
+  }, [expenses]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission logic here
-    if (!name.trim()) return;
-    if (amount <= 0) return;
+    const amountNumber = parseFloat(amount);
+    const parsedAmount = isNaN(amountNumber) ? 0 : amountNumber;
 
-    setExpense(prev => [...prev, { id: Date.now(), title: name.trim(), amount }]);
+    if (!name.trim() || parsedAmount <= 0) return;
+
+    setExpenses([...expenses, { id: Date.now(), title: name.trim(), amount: parsedAmount }]);
 
     setName('');
-    setAmount(0);
+    setAmount('');
   };
 
   const deleteExpense = (id: number): void => {
-    setExpense(prev => prev.filter(exp => exp.id !== id));
+    setExpenses(expenses.filter(exp => exp.id !== id));
   }
 
-  const totalExpense = expense.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString('en-PH', {
-                style: 'currency', currency: 'PHP'
-              });
+  const totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString('en-PH', {
+    style: 'currency', currency: 'PHP'
+  });
 
   return (
     <>
@@ -44,13 +62,14 @@ function App() {
               <label htmlFor="amount" className="block mb-2 text-sm font-medium dark:text-white">Amount</label>
               <input
                 type="number"
+                step="0.01"
                 id="amount"
                 className="block w-full px-3 py-2.5 bg-gray-50 border border-gray-400 text-sm rounded shadow-xs focus:outline-pink-600"
                 value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}></input>
+                onChange={(e) => setAmount(e.target.value)}></input>
             </div>
           </div>
-          <button type="submit" className="hidden"></button>
+          <button type="submit" className="mt-4 px-4 py-2 bg-pink-600 text-white rounded shadow-xs hover:bg-pink-700 focus:outline-pink-600 md:hidden">Add Expense</button>
         </form>
 
         <div className="relative overflow-x-auto bg-white shadow-xs border border-gray-200 rounded">
@@ -63,7 +82,7 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {expense.length === 0 && (
+              {expenses.length === 0 && (
                 <tr className="border-b border-gray-200">
                   <td colSpan={4} className='text-gray-500 text-sm p-4'>
                     No expense yet. Add one.
@@ -71,26 +90,25 @@ function App() {
                 </tr>
               )}
 
-              {expense.map((exp) => (
+              {expenses.map((exp) => (
                 <tr className="odd:bg-gray-100 even:bg-white border-b border-gray-200" key={exp.id}>
-                  <td className="hidden">{exp.id}</td>
                   <td className="px-3 py-4">{exp.title}</td>
                   <td className="px-3 py-4">{exp.amount.toLocaleString('en-PH', {
                     style: 'currency', currency: 'PHP'
                   })}</td>
                   <td className="px-3 py-4">
-                    <button 
-                    type="button" 
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => deleteExpense(exp.id)}>Delete</button>
+                    <button
+                      type="button"
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => deleteExpense(exp.id)}>Delete</button>
                   </td>
                 </tr>
               ))}
             </tbody>
-            <div>
-              <p className="text-sm px-3 py-3">Total: {totalExpense}</p>
-            </div>
           </table>
+          <div>
+            <p className="text-sm px-3 py-3">Total: {totalExpense}</p>
+          </div>
         </div>
 
 
