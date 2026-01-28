@@ -4,19 +4,29 @@ import type { Expense } from "./type"
 function App() {
   const [name, setName] = useState<Expense['title']>('');
   const [amount, setAmount] = useState<string>('');
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>(() => {
+    const stored = localStorage.getItem('expenses');
+    if (!stored) return [];
 
-  useEffect(() => {
-    const storedExpenses = localStorage.getItem('expenses');
-    if (storedExpenses) {
-      try {
-        const parsed = JSON.parse(storedExpenses);
-        if (Array.isArray(parsed)) setExpenses(parsed);
-      } catch {
-        console.error("Invalid expenses data");
-      }
+    try {
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
     }
-  }, []);
+  });
+
+  // useEffect(() => {
+  //   const storedExpenses = localStorage.getItem('expenses');
+  //   if (storedExpenses) {
+  //     try {
+  //       const parsed = JSON.parse(storedExpenses);
+  //       if (Array.isArray(parsed)) setExpenses(parsed);
+  //     } catch {
+  //       console.error("Invalid expenses data");
+  //     }
+  //   }
+  // }, []);
 
   useEffect(() => {
     localStorage.setItem('expenses', JSON.stringify(expenses));
@@ -84,7 +94,7 @@ function App() {
             <tbody>
               {expenses.length === 0 && (
                 <tr className="border-b border-gray-200">
-                  <td colSpan={4} className='text-gray-500 text-sm p-4'>
+                  <td colSpan={3} className='text-gray-500 text-sm p-4'>
                     No expense yet. Add one.
                   </td>
                 </tr>
