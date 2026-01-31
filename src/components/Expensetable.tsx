@@ -4,7 +4,21 @@ interface Expense {
     amount: number;
 }
 
-export default function ExpenseTable( { expenses, deleteExpense, totalExpense }: { expenses: Expense[]; deleteExpense: (id: number) => void; totalExpense: string }) {
+interface ExpenseTableProps {
+    expenses: Expense[];
+    setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
+}
+
+export default function ExpenseTable({ expenses, setExpenses }: ExpenseTableProps) {
+
+    const deleteExpense = (id: number): void => {
+        setExpenses(prev => prev.filter(exp => exp.id !== id));
+    }
+
+    const totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString('en-PH', {
+        style: 'currency', currency: 'PHP'
+    });
+    
     return (
         <div className="relative overflow-x-auto bg-white shadow-xs border border-gray-200 rounded">
             <table className="w-full text-sm text-left rtl:text-right text-body">

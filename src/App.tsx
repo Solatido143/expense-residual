@@ -34,35 +34,13 @@ function App() {
     localStorage.setItem('expenses', JSON.stringify(expenses));
   }, [expenses]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle form submission logic here
-    const amountNumber = parseFloat(amount);
-    const parsedAmount = isNaN(amountNumber) ? 0 : amountNumber;
-
-    if (!name.trim() || parsedAmount <= 0) return;
-
-    setExpenses([...expenses, { id: Date.now(), title: name.trim(), amount: parsedAmount }]);
-
-    setName('');
-    setAmount('');
-  };
-
-  const deleteExpense = (id: number): void => {
-    setExpenses(expenses.filter(exp => exp.id !== id));
-  }
-
-  const totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString('en-PH', {
-    style: 'currency', currency: 'PHP'
-  });
-
   return (
     <>
       <div className="grid md:grid-cols-2 gap-6 mb-6">
 
-        <ExpenseForm name={name} setName={setName} amount={amount} setAmount={setAmount} handleSubmit={handleSubmit}/>
+        <ExpenseForm name={name} setName={setName} amount={amount} setAmount={setAmount} setExpenses={setExpenses}/>
 
-        <ExpenseTable expenses={expenses} deleteExpense={deleteExpense} totalExpense={totalExpense} />
+        <ExpenseTable expenses={expenses} setExpenses={setExpenses}/>
 
       </div>
     </>

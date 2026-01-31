@@ -1,12 +1,33 @@
+interface Expense {
+    id:number,
+    title:string,
+    amount:number
+}
+
 interface ExpenseFormProps {
     name: string;
     setName: (name: string) => void;
     amount: string;
     setAmount: (amount: string) => void;
-    handleSubmit: (e: React.FormEvent) => void;
+    setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
 }
 
-export default function ExpenseForm({ name, setName, amount, setAmount, handleSubmit }: ExpenseFormProps) {
+export default function ExpenseForm({ name, setName, amount, setAmount, setExpenses }: ExpenseFormProps) {
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Handle form submission logic
+        const amountNumber = parseFloat(amount);
+        const parsedAmount = isNaN(amountNumber) ? 0 : amountNumber;
+
+        if (!name.trim() || parsedAmount <= 0) return;
+
+        setExpenses(prev => [...prev, { id: Date.now(), title: name.trim(), amount: parsedAmount }]);
+
+        setName('');
+        setAmount('');
+    };
+
     return (
         <form onSubmit={handleSubmit} className="bg-white">
             <div className="grid md:grid-cols-2 gap-6">
